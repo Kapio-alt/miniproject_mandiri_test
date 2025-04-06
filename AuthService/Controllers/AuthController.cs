@@ -6,6 +6,8 @@ using System.Security.Claims;
 using System.Text;
 using AuthService.Data;
 using AuthService.Models;
+using AuthService.Models.APIModel.Register;
+using AuthService.Models.APIModel.Login;
 
 namespace AuthService.Controllers
 {
@@ -23,23 +25,25 @@ namespace AuthService.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register(RegisterRequest req)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == req.Email))
                 return BadRequest("User already exists.");
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+            req.Password = BCrypt.Net.BCrypt.HashPassword(req.Password);
+            User user = new User { Email = req.Email, Name = req.Name, PasswordHash = req.Password };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return Ok("User registered.");
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(User user)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-            if (existingUser == null || !BCrypt.Net.BCrypt.Verify(user.PasswordHash, existingUser.PasswordHash))
-                return Unauthorized();
+
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.email);
+            if (existingUser == null || !BCrypt.Net.BCrypt.Verify(request.password, existingUser.PasswordHash))
+                return Unauthorized("Email or Password is Wrong");
 
             var token = GenerateJwtToken(existingUser);
             return Ok(new { token });
