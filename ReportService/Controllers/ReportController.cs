@@ -36,8 +36,15 @@ namespace ReportService.Controllers
         }
 
         [HttpPost("generate")]
-        public async Task<ActionResult<FinancialReport>> GenerateReport(FinancialReport report)
+        public async Task<ActionResult<FinancialReport>> GenerateReport(FinancialReportRequest req)
         {
+            FinancialReport report = new FinancialReport
+            {
+                UserId = req.UserId,
+                TotalIncome = req.TotalIncome,
+                TotalExpenses = req.TotalExpenses,
+                ReportDate = DateTime.UtcNow
+            };
             _context.FinancialReports.Add(report);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetUserFinancialSummary), new { userId = report.UserId }, report);

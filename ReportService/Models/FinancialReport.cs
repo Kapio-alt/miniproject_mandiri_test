@@ -9,4 +9,10 @@
         public decimal NetSavings => TotalIncome - TotalExpenses;
         public DateTime ReportDate { get; set; } = DateTime.UtcNow;
     }
+    public class FinancialReportRequest
+    {
+        public string UserId { get; set; }
+        public decimal TotalIncome { get; set; }
+        public decimal TotalExpenses { get; set; }
+    }
 }
